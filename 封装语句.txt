@@ -1,0 +1,4 @@
+在rustdesk路径运行。
+
+cargo build --features flutter --lib --release
+cd flutter && flutter build windows --release

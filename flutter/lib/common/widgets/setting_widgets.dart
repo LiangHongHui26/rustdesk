@@ -188,7 +188,7 @@ List<Widget> ServerConfigImportExportWidgets(
     });
   }
 
-  export() {
+  /* export() {
     final text = ServerConfig(
             idServer: controllers[0].text.trim(),
             relayServer: controllers[1].text.trim(),
@@ -198,7 +198,7 @@ List<Widget> ServerConfigImportExportWidgets(
     debugPrint("ServerConfig export: $text");
     Clipboard.setData(ClipboardData(text: text));
     showToast(translate('Export server configuration successfully'));
-  }
+  } */
 
   return [
     Tooltip(
@@ -206,10 +206,11 @@ List<Widget> ServerConfigImportExportWidgets(
       child: IconButton(
           icon: Icon(Icons.paste, color: Colors.grey), onPressed: import),
     ),
-    Tooltip(
-        message: translate('Export Server Config'),
-        child: IconButton(
-            icon: Icon(Icons.copy, color: Colors.grey), onPressed: export))
+    //删除导出配置信息按钮
+    //Tooltip(
+    //    message: translate('Export Server Config'),
+    //    child: IconButton(
+    //        icon: Icon(Icons.copy, color: Colors.grey), onPressed: export))
   ];
 }
 

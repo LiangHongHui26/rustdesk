@@ -3,7 +3,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
     [
         ("Status", "状态"),
         ("Your Desktop", "HB被控端"),
-        ("desk_tip", "可以通过下面的 ID ，和固定密码访问。"),
+        ("desk_tip", "可以通过下面的 ID 和密码访问。"),
         ("Password", "密码"),
         ("Ready", "就绪"),
         ("Established", "已建立"),
@@ -390,7 +390,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Accept sessions via click", "只允许点击访问"),
         ("Accept sessions via both", "允许密码或点击访问"),
         ("Please wait for the remote side to accept your session request...", "请等待对方接受你的连接..."),
-        ("One-time Password", "无一次性密码"),
+        ("One-time Password", "一次性密码"),
         ("Use one-time password", "使用一次性密码"),
         ("One-time password length", "一次性密码长度"),
         ("Request access to your device", "请求访问你的设备"),

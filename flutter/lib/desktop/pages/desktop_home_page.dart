@@ -148,7 +148,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             if (isOutgoingOnly)
               Positioned(
                 bottom: 6,
-                left: 12,
+                right: 12,
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: InkWell(

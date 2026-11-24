@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hbb/common/widgets/api_server_warning.dart';
 import 'package:flutter_hbb/common/widgets/setting_widgets.dart';
 import 'package:flutter_hbb/common/widgets/toolbar.dart';
@@ -110,7 +111,10 @@ void showServerSettingsWithValue(
 
     Widget buildField(
         String label, TextEditingController controller, String errorMsg,
-        {String? Function(String?)? validator, bool autofocus = false}) {
+        {String? Function(String?)? validator,
+        bool autofocus = false,
+        bool obscureText = false,
+        bool blockCopy = false}) {
       if (isDesktop || isWeb) {
         return Row(
           children: [
@@ -129,6 +133,8 @@ void showServerSettingsWithValue(
                 showLabelText: false,
                 validator: validator,
                 autofocus: autofocus,
+                obscureText: obscureText,
+                blockCopy: blockCopy,
               ).workaroundFreezeLinuxMint(),
             ),
           ],
@@ -140,6 +146,8 @@ void showServerSettingsWithValue(
         controller: controller,
         errorMsg: errorMsg,
         validator: validator,
+        obscureText: obscureText,
+        blockCopy: blockCopy,
       ).workaroundFreezeLinuxMint();
     }
 
@@ -190,7 +198,7 @@ void showServerSettingsWithValue(
                     ),
                   ),
                   SizedBox(height: 8),
-                  buildField('Key', keyCtrl, ''),
+                  buildField('Key', keyCtrl, '', obscureText: true, blockCopy: true),
                   if (isInProgress)
                     Padding(
                       padding: EdgeInsets.only(top: 8),
@@ -221,7 +229,7 @@ void showServerSettingsWithValue(
   });
 }
 
-TextFormField serverSettingsTextFormField({
+Widget serverSettingsTextFormField({
   required String label,
   required TextEditingController controller,
   required String errorMsg,
@@ -229,9 +237,12 @@ TextFormField serverSettingsTextFormField({
   bool autofocus = false,
   bool showLabelText = true,
   EdgeInsetsGeometry? contentPadding,
+  bool obscureText = false,
+  bool blockCopy = false,
 }) {
-  return TextFormField(
+  final field = TextFormField(
     controller: controller,
+    obscureText: obscureText,
     decoration: InputDecoration(
       labelText: showLabelText ? label : null,
       errorText: errorMsg.isEmpty ? null : errorMsg,
@@ -247,6 +258,29 @@ TextFormField serverSettingsTextFormField({
     smartQuotesType: SmartQuotesType.disabled,
     enableIMEPersonalizedLearning: false,
     spellCheckConfiguration: const SpellCheckConfiguration.disabled(),
+    // 屏蔽右键菜单里的"复制/剪切"
+    contextMenuBuilder: blockCopy
+        ? (context, editableTextState) => const SizedBox.shrink()
+        : null,
+  );
+
+  if (!blockCopy) return field;
+
+  // Focus 拦截 Ctrl+C / Ctrl+X / Ctrl+Shift+C
+  return Focus(
+    onKeyEvent: (node, event) {
+      if (event is KeyDownEvent) {
+        final isCtrl = HardwareKeyboard.instance.isControlPressed;
+        if (isCtrl && event.logicalKey == LogicalKeyboardKey.keyC) {
+          return KeyEventResult.handled;
+        }
+        if (isCtrl && event.logicalKey == LogicalKeyboardKey.keyX) {
+          return KeyEventResult.handled;
+        }
+      }
+      return KeyEventResult.ignored;
+    },
+    child: field,
   );
 }
 
